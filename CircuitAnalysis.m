@@ -64,7 +64,7 @@ F(1,2) = vin;
 % F(w) = 1
 w = pi;
 H = G+1j*w*C;
-X = F/H;
+X = H\F.';
 
 % DC sweep
 w = 0;
@@ -75,73 +75,76 @@ for v = vin
     F = zeros(1,length(X));
     F(1,2) = v;
     
-    X0 = F/H;
-    vo = X0(:,7);
-    v3 = X0(:,4);
+    X0 = H\F.';
+    v3 = 5*X0(8,:);
+    vo = 5*X0(4,:);
 
     figure(1)
-    plot(v,vo)
+    plot(v,vo,'r*')
     hold on
     grid on
-    plot(v,v3)
+    plot(v,v3,'b*')
+    legend('V_o','V_3')
     title('DC Voltage Plots')
-    xlabel('Vin (V)'),ylabel('Voltage (V)')
+    xlabel('V_{in} (V)'),ylabel('Voltage (V)')
 end
 
 % AC sweep
 vin = 1;
-w = 1:0.:100;
+F(1,2) = vin;
+w = 1:1:100;
 F(1,2) = vin;
 
 for w0 = w
     
-    H = G+1j*w*C;
-    X0 = F/H;
-    vo = X0(:,7);
-    v3 = X0(:,4);
+    H = G+w0*C;
+    X0 = H\F.';
+    v3 = 5*X0(8,:);
+    vo = 10*X0(4,:);
     
     figure(2) 
-    plot(w0,vo)
+    plot(w0,vo,'r*')
     hold on
     grid on
-    plot(w0,v3)
+    plot(w0,v3,'b*')
+    legend('V_o','V_3')
     title('AC Voltage Plots')
-    xlabel('Frequency (Hz)'),ylabel('Voltage (V)')
+    xlabel('{\omega} (Hz)'),ylabel('Voltage (V)')
 end
 
-% % Capacitance Sweeps
-% n = 100;
-% mu = 0.25;
-% sigma = 0.05;
-% c0 = zeros(1,n);
-% gain = zeros(1,n);
-% w0 = pi;
-% vin = 1;
-% 
-% for k = 1:n
-%     c0(k) = normrnd(mu,sigma);
-%     C = [c0(k),-c0(k),0,0,0,0,0,0;
-%     0,0,0,0,0,0,0,0;
-%     -c0(k),c0(k),0,0,0,0,0,0;
-%     0,0,0,0,0,0,0,0;
-%     0,0,0,0,0,0,0,0;
-%     0,0,0,0,0,0,0,0;
-%     0,0,0,0,0,0,0,0;
-%     0,0,0,0,0,0,0,L];
-% 
-%     figure(3)
-%     histogram(c0,10)
-%     title('Capacitance Distribution')
-%     xlabel('C'),ylabel('Count')
-%     
-%     H = G+w0*c0(k);
-%     X1 = F/H;
-%     vo(k) = X1(:,7);
-%     gain(k) = vo(k)/vin;
-% 
-%     figure(4) 
-%     histogram(gain,10)
-%     title('Voltage Gain Distribution')
-%     xlabel('Vo/Vin'),ylabel('Count')    
-% end
+% Capacitance Sweeps
+n = 100;
+mu = 0.25;
+sigma = 0.05;
+c0 = zeros(1,n);
+gain = zeros(1,n);
+w0 = pi;
+vin = 1;
+
+for k = 1:n
+    c0(k) = normrnd(mu,sigma);
+    C = [c0(k),-c0(k),0,0,0,0,0,0;
+    0,0,0,0,0,0,0,0;
+    -c0(k),c0(k),0,0,0,0,0,0;
+    0,0,0,0,0,0,0,0;
+    0,0,0,0,0,0,0,0;
+    0,0,0,0,0,0,0,0;
+    0,0,0,0,0,0,0,0;
+    0,0,0,0,0,0,0,L];
+
+    figure(3)
+    histogram(c0,10)
+    title('Capacitance Distribution')
+    xlabel('C'),ylabel('Count')
+    
+    H = G+w0*c0(k);
+    X1 = F/H;
+    vo(k) = X1(:,7);
+    gain(k) = vo(k)/vin;
+
+    figure(4) 
+    histogram(gain,10)
+    title('Voltage Gain Distribution')
+    xlabel('V_o/V_{in}'),ylabel('Count')    
+end
 
